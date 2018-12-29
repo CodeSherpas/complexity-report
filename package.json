@@ -34,6 +34,6 @@
   "dependencies": {
     "commander": "^2.9.0",
     "typhonjs-escomplex": "^0.1.0",
-    "complexity-reporters": "git+ssh://git@github.com:CodeSherpas/complexity-reporters.git"
+    "complexity-reporters": "git+https://git@github.com:CodeSherpas/complexity-reporters.git"
   }
 }
