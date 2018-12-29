@@ -7,7 +7,6 @@
 var options, state, queue,
 
 cli = require('commander'),
-config = require('./config'),
 fs = require('fs'),
 path = require('path'),
 escomplex = require('typhonjs-escomplex'),
@@ -47,22 +46,6 @@ function parseCommandLine () {
         option('-P, --dirpattern <pattern>', 'specify the directories to process using a regular expression to match against directory names').
         option('-x, --excludepattern <pattern>', 'specify the the directories to exclude using a regular expression to match against directory names').
         option('-m, --maxfiles <number>', 'specify the maximum number of files to have open at any point', parseInt).
-        option('-F, --maxfod <first-order density>', 'specify the per-project first-order density threshold', parseFloat).
-        option('-O, --maxcost <change cost>', 'specify the per-project change cost threshold', parseFloat).
-        option('-S, --maxsize <core size>', 'specify the per-project core size threshold', parseFloat).
-        option('-M, --minmi <maintainability index>', 'specify the per-module maintainability index threshold', parseFloat).
-        option('-C, --maxcyc <cyclomatic complexity>', 'specify the per-function cyclomatic complexity threshold', parseInt).
-        option('-Y, --maxcycden <cyclomatic density>', 'specify the per-function cyclomatic complexity density threshold', parseInt).
-        option('-D, --maxhd <halstead difficulty>', 'specify the per-function Halstead difficulty threshold', parseFloat).
-        option('-V, --maxhv <halstead volume>', 'specify the per-function Halstead volume threshold', parseFloat).
-        option('-E, --maxhe <halstead effort>', 'specify the per-function Halstead effort threshold', parseFloat).
-        option('-s, --silent', 'don\'t write any output to the console').
-        option('-l, --logicalor', 'disregard operator || as source of cyclomatic complexity').
-        option('-w, --switchcase', 'disregard switch statements as source of cyclomatic complexity').
-        option('-i, --forin', 'treat for...in statements as source of cyclomatic complexity').
-        option('-t, --trycatch', 'treat catch clauses as source of cyclomatic complexity').
-        option('-n, --newmi', 'use the Microsoft-variant maintainability index (scale of 0 to 100)').
-        option('-Q, --nocoresize', 'don\'t calculate core size or visibility matrix').
         parse(process.argv);
 
     config = readConfig(cli.config);
@@ -74,21 +57,17 @@ function parseCommandLine () {
     });
 
     options = {
-        logicalor: !cli.logicalor,
-        switchcase: !cli.switchcase,
-        forin: cli.forin || false,
-        trycatch: cli.trycatch || false,
-        newmi: cli.newmi || false,
+        logicalor: false,
+        switchcase: true,
+        forin: false,
+        trycatch: false,
+        newmi: true,
         ignoreErrors: cli.ignoreerrors || false,
         noCoreSize: true
     };
 
-    if (check.nonEmptyString(cli.format) === false) {
-        cli.format = 'plain';
-    }
-
     if (check.nonEmptyString(cli.filepattern) === false) {
-        cli.filepattern = '\\.js$';
+        cli.filepattern = '\\.(j|t)sx?$';
     }
     cli.filepattern = new RegExp(cli.filepattern);
 
@@ -199,11 +178,6 @@ function error (functionName, err) {
     process.exit(1);
 }
 
-function fail (message) {
-    console.log(message); // eslint-disable-line no-console
-    process.exitCode = 2;
-}
-
 function beginsWithShebang (source) {
     return source[0] === '#' && source[1] === '!';
 }
@@ -225,14 +199,8 @@ function getType(modulePath) {
 }
 
 function getReports () {
-    var result, failingModules;
-
     try {
-        result = escomplex.analyzeProject(state.sources.js, options, {allowReturnOutsideFunction: true});
-
-        if (!cli.silent) {
-            writeReports(result);
-        }
+        writeReports(escomplex.analyzeProject(state.sources.js, options, {allowReturnOutsideFunction: true}));
     } catch (err) {
         error('getReports', err);
     }
@@ -259,76 +227,4 @@ function writeReports (aComplexityReport) {
     } else {
         console.log(formatted); // eslint-disable-line no-console
     }
-}
-
-function getFailingModules (reports) {
-    return reports.reduce(function (failingModules, report) {
-        if (
-            (config.isModuleComplexityThresholdSet(cli) && isModuleTooComplex(report)) ||
-            (config.isFunctionComplexityThresholdSet(cli) && isFunctionTooComplex(report))
-        ) {
-            return failingModules.concat(report.path);
-        }
-
-        return failingModules;
-    }, []);
-}
-
-
-function isThresholdBreached (threshold, metric, inverse) {
-    if (!inverse) {
-        return check.number(threshold) && metric > threshold;
-    }
-
-    return check.number(threshold) && metric < threshold;
-}
-
-function isFunctionTooComplex (report) {
-    var i;
-
-    for (i = 0; i < report.functions.length; i += 1) {
-        if (isThresholdBreached(cli.maxcyc, report.functions[i].cyclomatic)) {
-            return true;
-        }
-
-        if (isThresholdBreached(cli.maxcycden, report.functions[i].cyclomaticDensity)) {
-            return true;
-        }
-
-        if (isThresholdBreached(cli.maxhd, report.functions[i].halstead.difficulty)) {
-            return true;
-        }
-
-        if (isThresholdBreached(cli.maxhv, report.functions[i].halstead.volume)) {
-            return true;
-        }
-
-        if (isThresholdBreached(cli.maxhe, report.functions[i].halstead.effort)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-function isModuleTooComplex (report) {
-    if (isThresholdBreached(cli.minmi, report.maintainability, true)) {
-        return true;
-    }
-}
-
-function isProjectTooComplex (result) {
-    if (isThresholdBreached(cli.maxfod, result.firstOrderDensity)) {
-        return true;
-    }
-
-    if (isThresholdBreached(cli.maxcost, result.changeCost)) {
-        return true;
-    }
-
-    if (isThresholdBreached(cli.maxsize, result.coreSize)) {
-        return true;
-    }
-
-    return false;
 }
