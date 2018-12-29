@@ -1,10 +1,9 @@
 /*globals exports, JSON */
 
-'use strict';
+"use strict";
 
 exports.format = format;
 
-function format (result) {
+function format(result) {
     return JSON.stringify(result, undefined, 4);
 }
-

@@ -1,10 +1,10 @@
 /*globals exports */
 
-'use strict';
+"use strict";
 
 exports.format = format;
 
-function format (result) {
+function format(result) {
     return JSON.stringify({
         averageFunctionLogicalSloc: result.loc,
         averageFunctionParams: result.params,
@@ -14,5 +14,5 @@ function format (result) {
         firstOrderDensity: result.firstOrderDensity,
         changeCost: result.changeCost,
         coreSize: result.coreSize
-    })
+    });
 }

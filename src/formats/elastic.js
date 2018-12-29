@@ -1,22 +1,28 @@
 /*globals exports, JSON */
-const path = require('path');
+const path = require("path");
 const cwd = process.cwd();
 
-'use strict';
+("use strict");
 
 exports.format = format;
 
-function format (result) {
+function format(result) {
     function replacer(key, value) {
-      if (typeof value === "boolean" || key === 'identifiers') {
-          return String(value);
+        if (typeof value === "boolean" || key === "identifiers") {
+            return String(value);
         }
-      return value;
+        return value;
     }
 
-    let formattedResult = '';
-    result.reports.forEach( (r,index) => formattedResult += JSON.stringify({index: {_id: index}}) +'\n' + JSON.stringify(r, replacer) + '\n')
+    let formattedResult = "";
+    result.reports.forEach(
+        (r, index) =>
+            (formattedResult +=
+                JSON.stringify({ index: { _id: index } }) +
+                "\n" +
+                JSON.stringify(r, replacer) +
+                "\n")
+    );
 
     return formattedResult;
 }
-
