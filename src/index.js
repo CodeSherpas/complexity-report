@@ -10,7 +10,6 @@ cli = require('commander'),
 fs = require('fs'),
 path = require('path'),
 escomplex = require('typhonjs-escomplex'),
-check = require('check-types'),
 async = require('async');
 const ComplexityReporter  = require('complexity-reporters')
 
@@ -45,16 +44,9 @@ function parseCommandLine () {
         option('-p, --filepattern <pattern>', 'specify the files to process using a regular expression to match against file names').
         option('-P, --dirpattern <pattern>', 'specify the directories to process using a regular expression to match against directory names').
         option('-x, --excludepattern <pattern>', 'specify the the directories to exclude using a regular expression to match against directory names').
-        option('-m, --maxfiles <number>', 'specify the maximum number of files to have open at any point', parseInt).
         parse(process.argv);
 
-    config = readConfig(cli.config);
-
-    Object.keys(config).forEach(function (key) {
-        if (cli[key] === undefined) {
-            cli[key] = config[key];
-        }
-    });
+    cli.maxfiles = 1024;
 
     options = {
         logicalor: false,
@@ -66,45 +58,20 @@ function parseCommandLine () {
         noCoreSize: true
     };
 
-    if (check.nonEmptyString(cli.filepattern) === false) {
+    if (!cli.filepattern) {
         cli.filepattern = '\\.(j|t)sx?$';
     }
     cli.filepattern = new RegExp(cli.filepattern);
 
-    if (check.nonEmptyString(cli.dirpattern)) {
+    if (cli.dirpattern) {
         cli.dirpattern = new RegExp(cli.dirpattern);
     }
 
-    if (check.nonEmptyString(cli.excludepattern)) {
+    if (cli.excludepattern) {
         cli.excludepattern = new RegExp(cli.excludepattern);
     }
 
-    if (check.number(cli.maxfiles) === false) {
-        cli.maxfiles = 1024;
-    }
 
-}
-
-function readConfig (configPath) {
-    var configInfo;
-
-    try {
-        if (check.not.nonEmptyString(configPath)) {
-            configPath = path.join(process.cwd(), '.complexrc');
-        }
-
-        if (fs.existsSync(configPath)) {
-            configInfo = fs.statSync(configPath);
-
-            if (configInfo.isFile()) {
-                return JSON.parse(fs.readFileSync(configPath), { encoding: 'utf8' });
-            }
-        }
-
-        return {};
-    } catch (err) {
-        error('readConfig', err);
-    }
 }
 
 function expectFiles (paths, noFilesFn) {
@@ -218,7 +185,7 @@ function writeReports (aComplexityReport) {
             break;
     }
 
-    if (check.nonEmptyString(cli.output)) {
+    if (cli.output) {
         fs.writeFile(cli.output, formatted, 'utf8', function (err) {
             if (err) {
                 error('writeReport', err);
