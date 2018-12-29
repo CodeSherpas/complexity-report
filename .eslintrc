@@ -1,8 +1,0 @@
-extends: "eslint:recommended"
-parser: "esprima"
-env:
-  node: true
-  mocha: true
-rules:
-  comma-dangle: [2, "never"]
-

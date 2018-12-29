@@ -4,7 +4,7 @@
 
 'use strict';
 
-var options, formatter, state, queue,
+var options, state, queue,
 
 cli = require('commander'),
 config = require('./config'),
@@ -13,6 +13,7 @@ path = require('path'),
 escomplex = require('typhonjs-escomplex'),
 check = require('check-types'),
 async = require('async');
+const ComplexityReporter  = require('complexity-reporters')
 
 // Node v0.10 polyfill for process.exitCode
 process.on('exit', function(code) {
@@ -103,11 +104,6 @@ function parseCommandLine () {
         cli.maxfiles = 1024;
     }
 
-    try {
-        formatter = require('./formats/' + cli.format);
-    } catch (err) {
-        formatter = require(cli.format);
-    }
 }
 
 function readConfig (configPath) {
@@ -237,26 +233,22 @@ function getReports () {
         if (!cli.silent) {
             writeReports(result);
         }
-
-        //NOTE: this functionality is not being used at the moment
-        //need to update to support output of tyhpon-escomplex
-        /*
-        failingModules = getFailingModules(result.reports);
-        if (failingModules.length > 0) {
-            return fail('Warning: Complexity threshold breached!\nFailing modules:\n' + failingModules.join('\n'));
-        }
-
-        if (config.isProjectComplexityThresholdSet(cli) && isProjectTooComplex(result)) {
-            fail('Warning: Project complexity threshold breached!');
-        }
-        */
     } catch (err) {
         error('getReports', err);
     }
 }
 
-function writeReports (result) {
-    var formatted = formatter.format(result);
+function writeReports (aComplexityReport) {
+    const reporter =  new ComplexityReporter(aComplexityReport)
+    var formatted;
+    switch(cli.format) {
+        case 'json': 
+            formatted = reporter.json
+            break;
+        default:
+            formatted = reporter.json
+            break;
+    }
 
     if (check.nonEmptyString(cli.output)) {
         fs.writeFile(cli.output, formatted, 'utf8', function (err) {

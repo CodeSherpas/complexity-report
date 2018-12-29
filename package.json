@@ -36,23 +36,14 @@
     "check-types": "^7.1.5",
     "commander": "^2.9.0",
     "esprima": "^3.1.3",
-    "typhonjs-escomplex": "^0.1.0"
+    "typhonjs-escomplex": "^0.1.0",
+    "complexity-reporters": "git+ssh://git@github.com:CodeSherpas/complexity-reporters.git"
   },
   "devDependencies": {
     "chai": "^3.4.0",
-    "eslint": "^3.17.1",
     "mocha": "^3.2.0"
   },
   "scripts": {
-    "lint": "eslint test src",
     "test": "mocha --ui tdd --reporter spec --colors"
-  },
-  "eslintConfig": {
-    "extends": "eslint:recommended",
-    "parser": "esprima",
-    "env": {
-      "node": true,
-      "mocha": true
-    }
   }
 }
