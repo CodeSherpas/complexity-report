@@ -1,6 +1,6 @@
 {
   "name": "@codesherpas/complexity-report",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Software complexity analysis for JavaScript projects",
   "homepage": "https://github.com/codesherpas/complexity-report",
   "bugs": "https://github.com/codesherpas/complexity-report/issues",
