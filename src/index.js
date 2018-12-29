@@ -42,7 +42,6 @@ function parseCommandLine () {
         option('-e, --ignoreerrors', 'ignore parser errors').
         option('-a, --allfiles', 'include hidden files in the report').
         option('-p, --filepattern <pattern>', 'specify the files to process using a regular expression to match against file names').
-        option('-P, --dirpattern <pattern>', 'specify the directories to process using a regular expression to match against directory names').
         option('-x, --excludepattern <pattern>', 'specify the the directories to exclude using a regular expression to match against directory names').
         parse(process.argv);
 
@@ -62,10 +61,6 @@ function parseCommandLine () {
         cli.filepattern = '\\.(j|t)sx?$';
     }
     cli.filepattern = new RegExp(cli.filepattern);
-
-    if (cli.dirpattern) {
-        cli.dirpattern = new RegExp(cli.dirpattern);
-    }
 
     if (cli.excludepattern) {
         cli.excludepattern = new RegExp(cli.excludepattern);
@@ -98,7 +93,7 @@ function processPath(p, cb) {
             return cb(err);
         }
         if (stat.isDirectory()) {
-            if ((!cli.dirpattern || cli.dirpattern.test(p)) && (!cli.excludepattern || !cli.excludepattern.test(p))) {
+            if ((!cli.excludepattern || !cli.excludepattern.test(p))) {
                 return readDirectory(p, cb);
             }
         } else if (cli.filepattern.test(p)) {
