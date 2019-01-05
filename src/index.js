@@ -17,7 +17,7 @@ const ComplexityReporter  = require('complexity-reporters')
 parseCommandLine();
 
 expectFiles(cli.args, cli.help.bind(cli));
-return getFiles(cli.args[0])
+return getFiles(cli.args)
 	.then( filesToAnalyze => {
 		return Promise.all(filesToAnalyze.map(async f => {
 			
@@ -73,8 +73,12 @@ async function find(path) {
 
 async function getFiles(path) {
 	let result;
+    let allFiles = '';
 
-	let allFiles = await find(path)
+    for (let p of path) {
+        allFiles += await find(p)
+    }
+
 	result = allFiles.split('\n').filter(f => cli.filepattern.test(f) && /\.(j|t)sx?$/.test(f))
 
 	if (cli.excludepattern) {
