@@ -107,13 +107,13 @@ function getReports (sources) {
     try {
         writeReports(escomplex.analyzeProject(sources, options, {allowReturnOutsideFunction: true}));
     } catch (err) {
-        error('getReports', err);
+        console.error('getReports', err);
     }
 }
 
 function writeReports (aComplexityReport) {
     const reporter =  new ComplexityReporter(aComplexityReport)
-    var formatted = (typeof reporter[cli.format] == 'object') ? reporter[cli.format] : reporter.json;
+    var formatted = reporter[cli.format] ? reporter[cli.format] : reporter.json;
 
     if (cli.output) {
         fs.writeFile(cli.output, formatted, 'utf8', function (err) {
@@ -122,6 +122,6 @@ function writeReports (aComplexityReport) {
             }
         });
     } else {
-        console.log(JSON.stringify(formatted, null, 4)); // eslint-disable-line no-console
+        console.log(formatted); // eslint-disable-line no-console
     }
 }
